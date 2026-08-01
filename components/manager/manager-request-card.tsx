@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDateRange, formatRelativeTime } from "@/lib/utils";
 import type { LeaveRequestWithEmployee } from "@/types";
 
+const COMMENT_MAX = 300;
+
 export function ManagerRequestCard({ request }: { request: LeaveRequestWithEmployee }) {
   const { toast } = useToast();
   const [comment, setComment] = useState("");
@@ -61,14 +63,18 @@ export function ManagerRequestCard({ request }: { request: LeaveRequestWithEmplo
       )}
 
       {isPending && (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-1.5">
           <Textarea
             placeholder="Optional comment"
             rows={2}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
+            maxLength={COMMENT_MAX}
             className="text-xs"
           />
+          <p className="text-right text-xs text-gray-400">
+            {comment.length}/{COMMENT_MAX}
+          </p>
           <div className="flex justify-end gap-2">
             <Button
               variant="danger"

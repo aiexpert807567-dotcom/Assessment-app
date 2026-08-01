@@ -1,138 +1,106 @@
+# Leave
 
+A minimal leave request management system built for a take home assessment. One workflow, done well: **Request → Review → Decision.**
 
 ## Live demo
 
 **URL:** https://assessment-app-wine-seven.vercel.app
 
-**Test accounts:**
+No sign in is required to open the link. Sign in is only required to use the employee or manager dashboards behind it.
 
-| Role | Email | Password |
-|---|---|---|
-| Employee | employee@test.com | Password123! |
-| Manager | manager@test.com | Password123! |
+**Test accounts**
 
-# Leave
+| Role | Email |
+|---|---|
+| Employee | employee@test.com |
+| Manager | manager@test.com |
 
-A minimal leave request management system. One workflow: **Request → Review → Decision.**
+Passwords for these accounts are shared in the project presentation document, not in this public repository.
 
-## Live demo
+## What it does
 
-**URL:**Leave — Time off, handled
+An employee submits a leave request with a start date, end date, and reason. It lands as Pending, visible only to that employee and to managers. A manager reviews every request in one place, sectioned by status, and approves or rejects with an optional comment. The employee sees the decision and the comment update instantly.
 
-**Test accounts:**
-
-| Role | Email | Password |
-
-|---|---|---|
-
-| Employee | employee@test.com | Password123! |
-
-| Manager | manager@test.com | Password123! |
-
----
-
-# Leave
-
-A minimal leave request management system. One workflow: **Request → Review → Decision.**
-
-Employees submit leave requests. Managers approve or reject them. That's it.
-
-Built with Next.js (App Router), TypeScript, Tailwind CSS, and Supabase.
+Two roles only: employee and manager. No admin panel, no chat, no email notifications, no file uploads, no calendar sync. Those were intentionally left out to keep the workflow focused.
 
 ## Stack
 
-- **Next.js 14** (App Router, Server Components, Server Actions)
-- **TypeScript**
-- **Tailwind CSS**
-- **Supabase** (Postgres, Auth, Row Level Security)
-- Deployment target: **Vercel**
+- Next.js 14, App Router, Server Components and Server Actions
+- TypeScript
+- Tailwind CSS
+- Supabase, Postgres, Auth, and Row Level Security
+- Deployed on Vercel
 
 ## Project structure
 
 ```
 app/
-  login/            Sign-in page
-  employee/         Employee dashboard (server component)
-  manager/          Manager dashboard (server component)
-  layout.tsx         Root layout + toast provider
-  page.tsx            Redirects to /login or the right dashboard
+  login/             sign in page
+  employee/          employee dashboard, server component
+  manager/           manager dashboard, server component
+  layout.tsx         root layout and toast provider
+  page.tsx           redirects to login or the correct dashboard
+  icon.svg           favicon
 components/
-  ui/                Shared primitives: Button, Card, Modal, Badge, etc.
-  employee/          Employee-only UI
-  manager/           Manager-only UI
+  ui/                shared primitives: Button, Card, Modal, Badge, Logo, and more
+  employee/          employee only UI
+  manager/           manager only UI
   dashboard-header.tsx
 lib/
-  supabase/          Browser, server, and middleware Supabase clients
-  actions.ts          Server Actions: sign in/out, create request, decide request
-  data.ts              Server-side data fetching + stats
-  utils.ts             cn(), date formatting helpers
+  supabase/          browser, server, and middleware Supabase clients
+  actions.ts         server actions: sign in and out, create request, decide request
+  data.ts            server side data fetching and stats
+  utils.ts           class name and date helpers
 hooks/
-  use-toast.tsx        Toast context + hook
+  use-toast.tsx       toast notifications
 types/
-  index.ts             Shared TypeScript types
+  index.ts            shared TypeScript types
 supabase/
-  schema.sql           Tables, RLS policies, auto-profile trigger
-  seed.sql              Sample data template
-middleware.ts           Route protection + session refresh
+  schema.sql           tables, RLS policies, and the profile creation trigger
+middleware.ts           route protection and session refresh
 ```
 
-## 1. Supabase setup
+## Supabase setup
 
-1. Create a new project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** and run `supabase/schema.sql`. This creates:
-   - `profiles` (id, name, email, role)
-   - `leave_requests` (id, employee_id, start_date, end_date, reason, status, manager_comment, created_at, updated_at)
-   - A trigger that auto-creates a `profiles` row whenever a new `auth.users` row is created, reading `name` and `role` from signup metadata.
-   - Row Level Security policies:
-     - Employees can only read/insert their **own** requests.
-     - Managers can read **all** requests and update status/comment on any of them.
-3. Go to **Authentication → Providers** and confirm Email is enabled. Disable "Confirm email" for local testing convenience (Authentication → Settings), or confirm the test accounts manually after creating them.
+1. Create a project at supabase.com.
+2. Open the SQL Editor and run the full contents of `supabase/schema.sql`. This creates the `profiles` and `leave_requests` tables, Row Level Security policies, and a trigger that creates a profile row for every new signup, always defaulting the role to employee.
+3. Under Authentication, disable email confirmation for convenience during testing.
+4. Create the two test users under Authentication, Users, Add user.
+5. In Table Editor, open `profiles` and change the manager account's role from employee to manager. New signups can never set their own role; it is always forced to employee at the database trigger.
 
-### Test accounts
+## Environment variables
 
-Create these two users under **Authentication → Users → Add user** (or via the Supabase Auth API), setting `user_metadata`:
-
-| Email | Password | Metadata |
-|---|---|---|
-| `employee@test.com` | `Password123!` | `{ "name": "Alex Employee", "role": "employee" }` |
-| `manager@test.com` | `Password123!` | `{ "name": "Jordan Manager", "role": "manager" }` |
-
-The `handle_new_user` trigger will create matching `profiles` rows automatically. If you create users without metadata, update their `role` in the `profiles` table directly.
-
-Optionally seed a few sample requests using `supabase/seed.sql` once you have the employee's UUID from the `profiles` table.
-
-## 2. Environment variables
-
-Copy `.env.example` to `.env.local` and fill in your project's values (Supabase Dashboard → Project Settings → API):
+Copy `.env.example` to `.env.local` and fill in your project's values from Supabase, Settings, API.
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-## 3. Run locally
+## Run locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Visit `http://localhost:3000`, sign in with either test account.
+## Deploy to Vercel
 
-## 4. Deploy to Vercel
-
-1. Push this project to a GitHub repo.
-2. Import the repo in [Vercel](https://vercel.com/new).
-3. Add the two environment variables from step 2 in the Vercel project settings.
-4. Deploy. No further configuration is needed — the app is a standard Next.js App Router project.
+1. Push the project to a GitHub repository.
+2. Import the repository at vercel.com/new.
+3. Add the two environment variables above in the Vercel project settings.
+4. Deploy. No further configuration is needed.
 
 ## How access control works
 
-- `middleware.ts` refreshes the Supabase session on every request and redirects unauthenticated users away from `/employee` and `/manager`, and signed-in users away from `/login`.
-- Each dashboard page double-checks the user's `role` from `profiles` server-side and redirects to the correct dashboard if mismatched.
-- The real enforcement layer is **Postgres RLS**: even if application code had a bug, the database itself won't let an employee read another employee's requests, or let anyone but a manager update a request's status.
+Middleware refreshes the Supabase session on every request and redirects unauthenticated users away from the employee and manager routes, and signed in users away from the login page. Each dashboard page also checks the user's role from `profiles` and redirects if it does not match the route.
+
+The real enforcement layer is Postgres Row Level Security. Even if application code had a bug, the database itself will not let an employee read another employee's requests, and will not let anyone but a manager update a request's status. Role is never trusted from client input; it is always set to employee by the database trigger on signup, and only changed manually in the database.
+
+## Input limits
+
+The reason field and the manager comment field are both capped at 300 characters, enforced in the UI and re-checked inside the server action so the limit holds even if the action is called directly.
 
 ## Notes
 
-- No email, chat, notifications, or file uploads — intentionally out of scope per the brief.
-- Dates are plain `date` columns; `end_date >= start_date` is enforced both client-side and with a database constraint.
+Dates are plain `date` columns. The constraint that the end date cannot be before the start date is enforced both client side and with a database check.

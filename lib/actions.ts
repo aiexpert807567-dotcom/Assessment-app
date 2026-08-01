@@ -8,6 +8,9 @@ export interface ActionResult {
   error?: string;
 }
 
+const REASON_MAX = 300;
+const COMMENT_MAX = 300;
+
 export async function signIn(formData: FormData): Promise<ActionResult> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
@@ -47,6 +50,10 @@ export async function createLeaveRequest(formData: FormData): Promise<ActionResu
     return { error: "All fields are required." };
   }
 
+  if (reason.length > REASON_MAX) {
+    return { error: `Reason must be ${REASON_MAX} characters or fewer.` };
+  }
+
   if (new Date(endDate) < new Date(startDate)) {
     return { error: "End date cannot be before start date." };
   }
@@ -81,6 +88,10 @@ export async function decideLeaveRequest(
   decision: "approved" | "rejected",
   comment: string
 ): Promise<ActionResult> {
+  if (comment.length > COMMENT_MAX) {
+    return { error: `Comment must be ${COMMENT_MAX} characters or fewer.` };
+  }
+
   const supabase = createClient();
   const {
     data: { user },

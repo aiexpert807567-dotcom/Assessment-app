@@ -1,3 +1,24 @@
+
+# Leave
+
+A minimal leave request management system. One workflow: **Request → Review → Decision.**
+
+## Live demo
+
+**URL:**Leave — Time off, handled
+
+**Test accounts:**
+
+| Role | Email | Password |
+
+|---|---|---|
+
+| Employee | employee@test.com | Password123! |
+
+| Manager | manager@test.com | Password123! |
+
+---
+
 # Leave
 
 A minimal leave request management system. One workflow: **Request → Review → Decision.**
